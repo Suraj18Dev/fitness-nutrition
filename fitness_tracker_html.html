@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker - 7 Day Program</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Lucide icons as SVG components
+        const Dumbbell = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6.5 6.5 11 11"/>
+                <path d="m21 21-1-1"/>
+                <path d="m3 3 1 1"/>
+                <path d="m18 22 4-4"/>
+                <path d="m2 6 4-4"/>
+                <path d="m3 10 7-7"/>
+                <path d="m14 21 7-7"/>
+            </svg>
+        );
+
+        const UtensilsCrossed = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
+                <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
+                <path d="m2.1 21.8 6.4-6.3"/>
+                <path d="m19 5-7 7"/>
+            </svg>
+        );
+
+        const CheckCircle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const Circle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+            </svg>
+        );
+
+        const Trash2 = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                <line x1="10" x2="10" y1="11" y2="17"/>
+                <line x1="14" x2="14" y1="11" y2="17"/>
+            </svg>
+        );
+
+        const ChevronDown = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6 9 6 6 6-6"/>
+            </svg>
+        );
+
+        const ChevronUp = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m18 15-6-6-6 6"/>
+            </svg>
+        );
+
+        const FitnessTracker = () => {
+            const [currentDay, setCurrentDay] = useState(1);
+            const [currentView, setCurrentView] = useState('exercise');
+            const [exerciseData, setExerciseData] = useState({});
+            const [foodData, setFoodData] = useState({});
+            const [expandedSections, setExpandedSections] = useState({ morning: true, evening: true });
+
+            useEffect(() => {
+                const saved = localStorage.getItem('fitnessData');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        setExerciseData(parsed.exercise || {});
+                        setFoodData(parsed.food || {});
+                    } catch (e) {
+                        console.error('Error loading data:', e);
+                    }
+                }
+            }, []);
+
+            const exerciseProgram = {
+                1: {
+                    name: "Chest + Triceps",
+                    morning: [
+                        { name: "Push-ups", sets: 5, reps: 20 },
+                        { name: "Dumbbell Floor Press", sets: 5, reps: 15 },
+                        { name: "Dumbbell Fly (floor)", sets: 5, reps: 15 }
+                    ],
+                    evening: [
+                        { name: "Diamond Push-ups", sets: 5, reps: 15 },
+                        { name: "Overhead Dumbbell Extension", sets: 5, reps: 15 },
+                        { name: "Close-grip Push-ups", sets: 5, reps: 20 }
+                    ]
+                },
+                2: {
+                    name: "Back + Biceps",
+                    morning: [
+                        { name: "One-arm Dumbbell Row", sets: 5, reps: 20, note: "each side" },
+                        { name: "Dumbbell Deadlift", sets: 5, reps: 10 }
+                    ],
+                    evening: [
+                        { name: "Bicep Curl", sets: 5, reps: 20 },
+                        { name: "Hammer Curl", sets: 5, reps: 20 },
+                        { name: "Superman Hold", sets: 5, reps: "10 sec" }
+                    ]
+                },
+                3: {
+                    name: "Abs + Core",
+                    morning: [
+                        { name: "Mountain Climbers", sets: 5, reps: 40 },
+                        { name: "Leg Raises", sets: 5, reps: 10 }
+                    ],
+                    evening: [
+                        { name: "Bicycle Crunches", sets: 5, reps: 20 },
+                        { name: "Plank Shoulder Taps", sets: 5, reps: 20 },
+                        { name: "Side Plank Hip Dips", sets: 5, reps: 10, note: "each side" }
+                    ]
+                },
+                4: {
+                    name: "Shoulders",
+                    morning: [
+                        { name: "Dumbbell Shoulder Press", sets: 5, reps: 20 },
+                        { name: "Front Raise", sets: 5, reps: 15 },
+                        { name: "Lateral Raise", sets: 5, reps: 15 }
+                    ],
+                    evening: [
+                        { name: "Arnold Press", sets: 5, reps: 15 },
+                        { name: "Push-ups (wide grip)", sets: 5, reps: 20 },
+                        { name: "Dumbbell Shrugs", sets: 5, reps: 15 }
+                    ]
+                },
+                5: {
+                    name: "Legs",
+                    morning: [
+                        { name: "Squats (bodyweight/goblet)", sets: 5, reps: 20 },
+                        { name: "Lunges", sets: 5, reps: 15, note: "each leg" }
+                    ],
+                    evening: [
+                        { name: "Dumbbell Deadlift", sets: 5, reps: 20 },
+                        { name: "Calf Raises", sets: 5, reps: 20 },
+                        { name: "Jump Squats", sets: 5, reps: 10 }
+                    ]
+                },
+                6: {
+                    name: "Mixed HIIT + Abs",
+                    morning: [
+                        { name: "Burpees", sets: 5, reps: 10 },
+                        { name: "Jump Squats", sets: 5, reps: 15 },
+                        { name: "Skipping / High Knees", sets: 5, reps: 25 }
+                    ],
+                    evening: [
+                        { name: "Russian Twists", sets: 5, reps: 20 },
+                        { name: "Flutter Kicks", sets: 5, reps: 20 },
+                        { name: "Plank", sets: 5, reps: "10 sec hold" }
+                    ]
+                },
+                7: {
+                    name: "Recovery / Light Volume",
+                    morning: [
+                        { name: "Yoga Push-ups", sets: 5, reps: 15 },
+                        { name: "Bodyweight Squats", sets: 5, reps: 20 },
+                        { name: "Superman Hold", sets: 5, reps: "15 sec" }
+                    ],
+                    evening: [
+                        { name: "Sit-ups", sets: 5, reps: 20 },
+                        { name: "Side Plank (each side)", sets: 5, reps: "20 sec" },
+                        { name: "Glute Bridge", sets: 5, reps: 10 }
+                    ]
+                }
+            };
+
+            const mealPlan = {
+                morning: {
+                    name: "Morning (empty stomach)",
+                    items: ["Warm water + lemon", "Optional: green tea/black coffee (no sugar)"]
+                },
+                breakfast: {
+                    name: "Breakfast (~400 kcal, 30g protein)",
+                    items: [
+                        "4 egg whites + 1 whole egg OR 100g paneer/tofu",
+                        "½ cup oats (30g) with 5-6 almonds",
+                        "1 fruit (apple/papaya/guava)",
+                        "1 multivitamin tablet (after meal)"
+                    ]
+                },
+                midMorning: {
+                    name: "Mid-Morning (~200 kcal, 15g protein)",
+                    items: [
+                        "50g roasted chana + 1 boiled egg OR",
+                        "Sprouts salad (50-70g moong + veggies)"
+                    ]
+                },
+                lunch: {
+                    name: "Lunch (~600 kcal, 45g protein)",
+                    items: [
+                        "2 chapati (multigrain) or 1 small bowl rice",
+                        "1 bowl dal/rajma/chole",
+                        "100-150g chicken/fish/paneer/soy chunks",
+                        "1 bowl sabzi",
+                        "Salad"
+                    ]
+                },
+                eveningSnack: {
+                    name: "Evening Snack (~200 kcal, 20g protein)",
+                    items: [
+                        "Black coffee/green tea",
+                        "2 boiled eggs/handful of nuts",
+                        "1 banana (if pre-workout)"
+                    ]
+                },
+                dinner: {
+                    name: "Dinner (~500 kcal, 35g protein)",
+                    items: [
+                        "1 chapati OR ½ bowl rice",
+                        "150g chicken/fish/paneer/tofu/soy",
+                        "1 bowl sabzi",
+                        "Salad/stir-fried veggies"
+                    ]
+                },
+                beforeBed: {
+                    name: "Before Bed (~150 kcal, 15g protein)",
+                    items: [
+                        "1 glass warm low-fat milk OR",
+                        "100g paneer (slow digesting protein)"
+                    ]
+                }
+            };
+
+            const toggleExercise = (day, session, exerciseIndex, setIndex) => {
+                const key = `${day}-${session}-${exerciseIndex}-${setIndex}`;
+                const newData = { ...exerciseData };
+                if (newData[key]) {
+                    delete newData[key];
+                } else {
+                    newData[key] = true;
+                }
+                setExerciseData(newData);
+                localStorage.setItem('fitnessData', JSON.stringify({ exercise: newData, food: foodData }));
+            };
+
+            const toggleFood = (day, mealKey, itemIndex) => {
+                const key = `${day}-${mealKey}-${itemIndex}`;
+                const newData = { ...foodData };
+                if (newData[key]) {
+                    delete newData[key];
+                } else {
+                    newData[key] = true;
+                }
+                setFoodData(newData);
+                localStorage.setItem('fitnessData', JSON.stringify({ exercise: exerciseData, food: newData }));
+            };
+
+            const getCompletionStats = (day) => {
+                const program = exerciseProgram[day];
+                let total = 0;
+                let completed = 0;
+
+                ['morning', 'evening'].forEach(session => {
+                    program[session].forEach((ex, exIdx) => {
+                        for (let i = 0; i < ex.sets; i++) {
+                            total++;
+                            const key = `${day}-${session}-${exIdx}-${i}`;
+                            if (exerciseData[key]) completed++;
+                        }
+                    });
+                });
+
+                return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+            };
+
+            const getFoodStats = (day) => {
+                let total = 0;
+                let completed = 0;
+
+                Object.keys(mealPlan).forEach(mealKey => {
+                    mealPlan[mealKey].items.forEach((item, idx) => {
+                        total++;
+                        const key = `${day}-${mealKey}-${idx}`;
+                        if (foodData[key]) completed++;
+                    });
+                });
+
+                return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+            };
+
+            const resetDay = () => {
+                if (window.confirm('Reset all progress for this day?')) {
+                    const newExerciseData = { ...exerciseData };
+                    const newFoodData = { ...foodData };
+                    
+                    Object.keys(newExerciseData).forEach(key => {
+                        if (key.startsWith(`${currentDay}-`)) delete newExerciseData[key];
+                    });
+                    
+                    Object.keys(newFoodData).forEach(key => {
+                        if (key.startsWith(`${currentDay}-`)) delete newFoodData[key];
+                    });
+
+                    setExerciseData(newExerciseData);
+                    setFoodData(newFoodData);
+                    localStorage.setItem('fitnessData', JSON.stringify({ exercise: newExerciseData, food: newFoodData }));
+                }
+            };
+
+            const program = exerciseProgram[currentDay];
+            const stats = currentView === 'exercise' ? getCompletionStats(currentDay) : getFoodStats(currentDay);
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+                    <div className="max-w-4xl mx-auto p-4 pb-24">
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-6 shadow-2xl border border-white/20">
+                            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                                <Dumbbell />
+                                Fitness Tracker
+                            </h1>
+                            <p className="text-purple-200">75kg Training Program</p>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-2 mb-6">
+                            {[1, 2, 3, 4, 5, 6, 7].map(day => {
+                                const dayStats = getCompletionStats(day);
+                                return (
+                                    <button
+                                        key={day}
+                                        onClick={() => setCurrentDay(day)}
+                                        className={`p-3 rounded-xl font-semibold transition-all ${
+                                            currentDay === day
+                                                ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg scale-105'
+                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                        } border border-white/20`}
+                                    >
+                                        <div className="text-lg">D{day}</div>
+                                        <div className="text-xs mt-1 opacity-80">{dayStats.percentage}%</div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex gap-2 mb-6">
+                            <button
+                                onClick={() => setCurrentView('exercise')}
+                                className={`flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${
+                                    currentView === 'exercise'
+                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                } border border-white/20`}
+                            >
+                                <Dumbbell />
+                                Exercise
+                            </button>
+                            <button
+                                onClick={() => setCurrentView('food')}
+                                className={`flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${
+                                    currentView === 'food'
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                } border border-white/20`}
+                            >
+                                <UtensilsCrossed />
+                                Food
+                            </button>
+                        </div>
+
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-6 border border-white/20">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="text-white font-semibold">
+                                    Day {currentDay}: {program.name}
+                                </h3>
+                                <button
+                                    onClick={resetDay}
+                                    className="text-red-300 hover:text-red-100 transition-colors"
+                                >
+                                    <Trash2 />
+                                </button>
+                            </div>
+                            <div className="bg-slate-900/50 rounded-full h-4 overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500"
+                                    style={{ width: `${stats.percentage}%` }}
+                                />
+                            </div>
+                            <p className="text-purple-200 text-sm mt-2">
+                                {stats.completed} / {stats.total} completed ({stats.percentage}%)
+                            </p>
+                        </div>
+
+                        {currentView === 'exercise' && (
+                            <>
+                                {['morning', 'evening'].map(session => (
+                                    <div key={session} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-6 border border-white/20">
+                                        <button
+                                            onClick={() => setExpandedSections({ ...expandedSections, [session]: !expandedSections[session] })}
+                                            className="w-full flex justify-between items-center mb-4"
+                                        >
+                                            <h3 className="text-xl font-bold text-white capitalize">
+                                                {session} Session (250 reps)
+                                            </h3>
+                                            {expandedSections[session] ? <ChevronUp /> : <ChevronDown />}
+                                        </button>
+
+                                        {expandedSections[session] && program[session].map((exercise, exIdx) => (
+                                            <div key={exIdx} className="mb-6 last:mb-0">
+                                                <h4 className="text-purple-200 font-semibold mb-3">
+                                                    {exercise.name} - {exercise.sets} × {exercise.reps}
+                                                    {exercise.note && <span className="text-sm ml-2">({exercise.note})</span>}
+                                                </h4>
+                                                <div className="grid grid-cols-5 gap-2">
+                                                    {[...Array(exercise.sets)].map((_, setIdx) => {
+                                                        const key = `${currentDay}-${session}-${exIdx}-${setIdx}`;
+                                                        const isCompleted = exerciseData[key];
+                                                        return (
+                                                            <button
+                                                                key={setIdx}
+                                                                onClick={() => toggleExercise(currentDay, session, exIdx, setIdx)}
+                                                                className={`p-4 rounded-xl font-semibold transition-all ${
+                                                                    isCompleted
+                                                                        ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-lg'
+                                                                        : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
+                                                                } border border-white/10`}
+                                                            >
+                                                                {isCompleted ? <CheckCircle /> : <Circle />}
+                                                                <div className="text-xs mt-1">Set {setIdx + 1}</div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </>
+                        )}
+
+                        {currentView === 'food' && (
+                            <div className="space-y-4">
+                                {Object.keys(mealPlan).map(mealKey => (
+                                    <div key={mealKey} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                                        <h3 className="text-lg font-bold text-white mb-4">{mealPlan[mealKey].name}</h3>
+                                        <div className="space-y-3">
+                                            {mealPlan[mealKey].items.map((item, idx) => {
+                                                const key = `${currentDay}-${mealKey}-${idx}`;
+                                                const isCompleted = foodData[key];
+                                                return (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => toggleFood(currentDay, mealKey, idx)}
+                                                        className={`w-full p-4 rounded-xl text-left flex items-start gap-3 transition-all ${
+                                                            isCompleted
+                                                                ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-400'
+                                                                : 'bg-slate-800/30 border-slate-600 hover:bg-slate-700/30'
+                                                        } border`}
+                                                    >
+                                                        {isCompleted ? <CheckCircle /> : <Circle />}
+                                                        <span className={`${isCompleted ? 'text-white' : 'text-slate-300'}`}>{item}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<FitnessTracker />, document.getElementById('root'));
+    </script>
+</body>
+</html>
